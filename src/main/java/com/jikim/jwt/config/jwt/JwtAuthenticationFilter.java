@@ -36,6 +36,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 		System.out.println("JwtAuthenticationFilter : 로그인 시도중");
 
 		// 1. username, password 받아서
+		User user = null;
 		try {
 			/*BufferedReader br = request.getReader();
 			String input = null;
@@ -43,26 +44,26 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 				System.out.println(input);
 			}*/
 			ObjectMapper om = new ObjectMapper();
-			User user = om.readValue(request.getInputStream(), User.class);
+			user = om.readValue(request.getInputStream(), User.class);
 			System.out.println(user);
 
-			UsernamePasswordAuthenticationToken authenticationToken =
-				new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword());
 
-			// PrincipalDetailsService 의 loadUserByUsername() 함수가 실행됨.
-			Authentication authentication = authenticationManager.authenticate(authenticationToken);
-
-			// => 로그인이 되었다는 뜻.
-			PrincipalDetails principalDetails = (PrincipalDetails)authentication.getPrincipal();
-			System.out.println("로그인 완료됨 : " + principalDetails.getUser().getUsername());
-			// authentication 객체가 session 영역에 저장을 해야하고 그 방법이 return 해주면 됨.
-			// 리턴의 이유는 권한 관리를 security가 대신 해주기 때문에 편하려고 하는 것.
-			// 굳이 JWT 토큰을 사용하면서 세션을 만들 이유가 없음. 근데 단지 권한 처리때문에 session 넣어 줌.
-			return authentication;
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		return null;
+		UsernamePasswordAuthenticationToken authenticationToken =
+			new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword());
+
+		// PrincipalDetailsService 의 loadUserByUsername() 함수가 실행됨.
+		Authentication authentication = authenticationManager.authenticate(authenticationToken);
+
+		// => 로그인이 되었다는 뜻.
+		PrincipalDetails principalDetails = (PrincipalDetails)authentication.getPrincipal();
+		System.out.println("로그인 완료됨 : " + principalDetails.getUser().getUsername());
+		// authentication 객체가 session 영역에 저장을 해야하고 그 방법이 return 해주면 됨.
+		// 리턴의 이유는 권한 관리를 security가 대신 해주기 때문에 편하려고 하는 것.
+		// 굳이 JWT 토큰을 사용하면서 세션을 만들 이유가 없음. 근데 단지 권한 처리때문에 session 넣어 줌.
+		return authentication;
 	}
 
 	// attemptAuthentication 실행 후 인증이 정상적으로 되었으면 successfulAuthentication
